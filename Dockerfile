@@ -8,16 +8,14 @@ RUN wget https://busybox.net/downloads/busybox-1.35.0.tar.bz2 \
   && tar xf busybox-1.35.0.tar.bz2 \
   && mv /busybox-1.35.0 /busybox
 
+# Create a non-root user to own the files and run our server
+RUN adduser -D static 
+
 WORKDIR /busybox
 
 # Copy the busybox build config (limited to httpd)
 COPY .config .
-
-# Compile and install busybox
 RUN make && make install
-
-# Create a non-root user to own the files and run our server
-RUN adduser -D static
 
 # Switch to the scratch image
 FROM scratch
@@ -39,11 +37,6 @@ WORKDIR /home/static
 # and save the developer the need to override the CMD line in case they ever
 # want to use a httpd.conf
 COPY httpd.conf .
-
-# Copy the static website
-# Use the .dockerignore file to control what ends up inside the image!
-# NOTE: Commented out since this will also copy the .config file
-# COPY . .
 
 # Run busybox httpd
 CMD ["/busybox", "httpd", "-f", "-v", "-p", "8080", "-c", "httpd.conf"]
