@@ -11,6 +11,11 @@ RUN wget https://busybox.net/downloads/busybox-1.35.0.tar.bz2 \
 # Create a non-root user to own the files and run our server
 RUN adduser -D static 
 
+# Download WebDevelopment CA1 sources
+RUN wget https://github.com/SuellenLourrayne/CA1/archive/refs/heads/main.tar.gz && tar xf main.tar.gz \
+  && rm main.tar.gz \
+  && mv /CA1-main /home/static  
+
 WORKDIR /busybox
 
 # Copy the busybox build config (limited to httpd)
@@ -28,9 +33,15 @@ COPY --from=builder /etc/passwd /etc/passwd
 # Copy the busybox static binary
 COPY --from=builder /busybox/_install/bin/busybox /
 
+#copy the CA file
+COPY --from=builder /home/static /home/static
+
 # Use our non-root user
 USER static
 WORKDIR /home/static
+
+#Changing work directory
+WORKDIR /home/static/CA1-main
 
 # Uploads a blank default httpd.conf
 # This is only needed in order to set the `-c` argument in this base file
